@@ -187,3 +187,46 @@ BEGIN
     RETURN CONCAT(@Ime, ' ', @Prezime);
 END;
 `
+
+# Prikazati uspostavljanje indexa
+### Kreiranje klasterisanog indeksa na koloni PacijentID:
+`
+CREATE CLUSTERED INDEX IX_Pacijent_PacijentID ON Pacijent (PacijentID);
+`
+### Kreiranje nefragmentiranog neklasterisanog indeksa na koloni Ime:
+`
+CREATE NONCLUSTERED INDEX IX_Pacijent_Ime ON Pacijent (Ime) WITH FILLFACTOR = 80;
+`
+`
+CREATE INDEX IDX_Ime ON Pacijent(Ime);
+`
+\
+`
+SELECT * FROM Pacijent WHERE Ime = 'Marko';
+`
+
+# JOIN sve varijante
+## INNER JOIN:
+`
+SELECT Pacijent.Ime, Pacijent.Prezime, Pregled.Datum
+FROM Pacijent
+INNER JOIN Pregled ON Pacijent.PacijentID = Pregled.PacijentID;
+`
+
+## LEFT JOIN:
+`SELECT Pacijent.Ime, Pacijent.Prezime, Pregled.Datum
+FROM Pacijent
+LEFT JOIN Pregled ON Pacijent.PacijentID = Pregled.PacijentID;
+`
+
+## RIGHT JOIN:
+`SELECT Pacijent.Ime, Pacijent.Prezime, Pregled.Datum
+FROM Pacijent
+RIGHT JOIN Pregled ON Pacijent.PacijentID = Pregled.PacijentID;
+`
+
+## FULL OUTER JOIN:
+`SELECT Pacijent.Ime, Pacijent.Prezime, Pregled.Datum
+FROM Pacijent
+FULL OUTER JOIN Pregled ON Pacijent.PacijentID = Pregled.PacijentID;
+`
