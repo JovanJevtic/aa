@@ -1,1 +1,1 @@
-![AAAa](C:\Users\Korisnik\Desktop\ww\IMG.jpg)
+![AAAa](https://github.com/JovanJevtic/aa/blob/main/IMG.jpg)
