@@ -230,3 +230,5 @@ RIGHT JOIN Pregled ON Pacijent.PacijentID = Pregled.PacijentID;
 FROM Pacijent
 FULL OUTER JOIN Pregled ON Pacijent.PacijentID = Pregled.PacijentID;
 `
+===
+![AAAa](https://github.com/JovanJevtic/aa/blob/main/img2.jpg)
