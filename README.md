@@ -90,3 +90,100 @@ CREATE TABLE Doktor (
 
 ### 1. COALESCE: Vraća prvu ne-NULL vrednost iz liste.
 `SELECT Ime, COALESCE(Nadimak, 'Nepoznat') AS PrikazNadimka FROM Pacijent;`
+
+# 7 Koristenje pogleda, uskladistenih funkcija, triggera, udf funkcija
+
+> Prikazati korištenje pogleda, uskladištenih procedura, trigera i UDF funkcija izradom minimalno po dva objekta za svaki od navedenih u ovoj tački
+
+### 1. Pogledi 
+#### Pogled za listu pacijenata sa imenima doktora:
+
+`
+CREATE VIEW PregledPacijenata AS
+SELECT p.Ime AS ImePacijenta, d.Ime AS ImeDoktora
+FROM Pacijent p
+JOIN Pregled pr ON p.PacijentID = pr.PacijentID
+JOIN Doktor d ON pr.DoktorID = d.DoktorID;
+`
+#### Pogled za prosečne godine pacijenata:
+CREATE VIEW ProsečneGodine AS
+SELECT AVG(DATEDIFF(YEAR, DatumRodjenja, GETDATE())) AS ProsečneGodinePacijenata
+FROM Pacijent;
+
+### 2. Uskladištene procedure (Stored Procedures):
+
+#### Uskladištena procedura za dodavanje novog pacijenta:
+`
+CREATE PROCEDURE DodajPacijenta
+    @Ime VARCHAR(50),
+    @Prezime VARCHAR(50),
+    @DatumRodjenja DATE
+AS
+BEGIN
+    INSERT INTO Pacijent (Ime, Prezime, DatumRodjenja)
+    VALUES (@Ime, @Prezime, @DatumRodjenja);
+END;
+`
+
+#### Uskladištena procedura za ažuriranje imena pacijenta:
+`
+CREATE PROCEDURE AzurirajImePacijenta
+    @PacijentID INT,
+    @NovoIme VARCHAR(50)
+AS
+BEGIN
+    UPDATE Pacijent
+    SET Ime = @NovoIme
+    WHERE PacijentID = @PacijentID;
+END;
+`
+
+### 3. Triggeri
+
+#### Triger za automatsko ažuriranje datuma poslednje izmene pacijenta:
+`
+CREATE TRIGGER UpdateDatumIzmene
+ON Pacijent
+AFTER UPDATE
+AS
+BEGIN
+    UPDATE p
+    SET DatumPoslednjeIzmene = GETDATE()
+    FROM Pacijent p
+    JOIN INSERTED i ON p.PacijentID = i.PacijentID;
+END;
+`
+#### Triger za sprečavanje brisanja pacijenta koji ima pregled:
+`
+CREATE TRIGGER PreventDeleteWithPregled
+ON Pacijent
+FOR DELETE
+AS
+BEGIN
+    IF EXISTS (SELECT 1 FROM deleted d JOIN Pregled pr ON d.PacijentID = pr.PacijentID)
+    BEGIN
+        RAISEERROR('Pacijent ima zakazane preglede i ne može se obrisati.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END;
+END;`
+
+### 4. UDF (User-Defined Function) funkcije
+
+#### UDF funkcija za računanje starosti pacijenta:
+`
+CREATE FUNCTION StarostPacijenta (@DatumRodjenja DATE)
+RETURNS INT
+AS
+BEGIN
+    RETURN DATEDIFF(YEAR, @DatumRodjenja, GETDATE());
+END;
+`
+#### UDF funkcija za spajanje imena i prezimena:
+`
+CREATE FUNCTION SpojiImePrezime (@Ime VARCHAR(50), @Prezime VARCHAR(50))
+RETURNS VARCHAR(100)
+AS
+BEGIN
+    RETURN CONCAT(@Ime, ' ', @Prezime);
+END;
+`
